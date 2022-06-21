@@ -1,8 +1,10 @@
 import React, {setState, useState} from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { GiftedChat, Bubble } from 'react-native-gifted-chat';
+import { GiftedChat, Bubble, InputToolbar } from 'react-native-gifted-chat';
+import NetInfo from '@react-native-community/netinfo';
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
+// import { AsyncStorage } from 'react-native';
+// import AsyncStorage from '@react-native-community/async-storage';
 
 import { v4 as uuidv4 } from 'uuid';
 //SETUP FIREBASE
@@ -41,9 +43,30 @@ export default class Chat extends React.Component{
           this.referenceMessagesUser= null;
     }
 
+    async getMessages() {
+      let messages = '';
+      try {
+        messages = await AsyncStorage.getItem('messages') || [];
+        this.setState({
+          messages: JSON.parse(messages)
+        });
+      } catch(error){
+        console.log(error.message);
+      }
+    };
+
     componentDidMount() {
+      this.getMessages();
       let { name } = this.props.route.params;
       this.props.navigation.setOptions({ title: name });
+
+      NetInfo.fetch().then(connection => {
+        if(connection.isConnected){
+          console.log('online');
+        } else{
+          console.log('offline');
+        }
+      });
   
       // Reference to load messages via Firebase
       this.referenceChatMessages = firebase.firestore().collection("messages");
@@ -72,6 +95,8 @@ export default class Chat extends React.Component{
     });
   }
 
+
+
       // stop listening to auth and collection changes
     componentWillUnmount() {
       this.authUnsubscribe();
@@ -90,13 +115,32 @@ export default class Chat extends React.Component{
         });
       }
 
-  onSend(messages = []) {
-    this.setState((previousState) => ({
-      messages: GiftedChat.append(previousState.messages, messages),
-    }),() => {
-      this.addMessages();
-    });
-  };
+      onSend(messages = []) {
+        this.setState(previousState => ({
+          messages: GiftedChat.append(previousState.messages, messages),
+        }), () => {
+          this.saveMessages();
+        });
+      };
+
+      async saveMessages(){
+        try {
+          await AsyncStorage.setItem('messages', JSON.stringify(this.state.messages));
+        } catch(error){
+          console.log(error.message);
+        }
+      }
+
+      async deleteMessages(){
+        try{
+          await AsyncStorage.removeItem('messages');
+          this.setState({
+            messages: []
+          })
+        } catch(error){
+          console.log(error.message);
+        }
+      }
 
   onCollectionUpdate = (querySnapshot) => {
     const messages = [];
@@ -129,6 +173,17 @@ export default class Chat extends React.Component{
       />
     )
   };
+
+  renderInputToolbar(props){
+    if(this.state.isConnected==false){
+    } else{
+      return(
+        <InputToolbar
+        {...props}
+        />
+      );
+    }
+  }
 
   render() {
     let { color, name } = this.props.route.params;
