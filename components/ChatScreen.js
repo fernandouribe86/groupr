@@ -1,5 +1,5 @@
 import React, {setState, useState} from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, AsyncStorage } from 'react-native';
 import { GiftedChat, Bubble, InputToolbar } from 'react-native-gifted-chat';
 import NetInfo from '@react-native-community/netinfo';
 
@@ -91,7 +91,7 @@ export default class Chat extends React.Component{
                   .where("uid", '==', this.state.uid);
         this.unsubscribe = this.referenceChatMessages
           .orderBy("createdAt", "desc")
-          .onSnapshot(this.onCollectionUpdate);
+          // .onSnapshot(this.onCollectionUpdate);
     });
   }
 
@@ -100,7 +100,7 @@ export default class Chat extends React.Component{
       // stop listening to auth and collection changes
     componentWillUnmount() {
       this.authUnsubscribe();
-      this.unsubscribe();
+      // this.unsubscribe();
     };
 
       addMessages() { 
