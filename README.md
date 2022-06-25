@@ -14,15 +14,31 @@ location.
 - Expo
 
 ## User Stories
+- As a new user, I want to be able to easily a chat room so I can start chatting.
+- As a user, I want to be able to send messages to my contacts so that I can stay in communication with them.
+- As a user, I want to send images to other users so that they can see what I want to share.
+- As a user, I want to share my location with other users so they can see my current location.
+- As a user, I want to be able to read my messages offline so I can reread conversations at any time.
+- As a user with a visual impairment, I want to use a chat app that is compatible with a screen reader so that I can engage with a chat interface.
 
 
 ## Features
+- A homepage where users can enter their name, select a background color, and enter the chat.
+- A chat page displaying the conversation and images
+- The ability to send/receive photos and locations, either from the library or with the camera (with permissions)
+- User data is stored online and locally.
 
 
 ## Screenshots
+- Login screen allowing users to pick Chat-app colors:
 
+![Screenshot](https://github.com/fernandouribe86/groupr/blob/main/assets/Screen%20Shot%202022-06-25%20at%2011.56.25%20AM.png)
 
-# Development environment setup
+- Chat Screen with communition (geolocation and image) functionality:
+
+![Screenshot2](https://github.com/fernandouribe86/groupr/blob/main/assets/Screen%20Shot%202022-06-25%20at%2011.55.56%20AM.png)
+
+## Development environment setup
 
 - Make sure expo-cli is installed globally:
 ```npm install expo-cli --global```
@@ -30,17 +46,17 @@ location.
 - Initialize project:
 ```expo init "Chat-app"```
 
-# Launch via emulator (Android Studio (Windows) or XCode (iOS)), or a mobile phone
+## Launch via emulator (Android Studio (Windows) or XCode (iOS)), or a mobile phone
 
 - Launch:
 ```npm start``` or ```expo start```
 
-# Database configuration
+## Database configuration
 Chat-app makes use of Cloud Firestore, a real-time database which synchronizes data across multiple devices and stores it in Firebase's Cloud.
 
 ```npm install --save firebase (current version: "^9.8.1")```
 
-# Necessary libraries to install
+## Necessary libraries to install
 
 - React navigation and dependencies
 ```npm install --save react-navigation``` 
@@ -60,7 +76,7 @@ Chat-app makes use of Cloud Firestore, a real-time database which synchronizes d
 - Expo's Location API and react-native-maps
 ```expo install expo-location expo install react-native-maps```
 
-# Installation Instructions
+## Installation Instructions
 
 - Navigate to the project root folder
 - Run "expo start" or "npm start"
