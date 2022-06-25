@@ -2,6 +2,8 @@ import React, {setState, useState} from 'react';
 import { View, Text, StyleSheet, AsyncStorage } from 'react-native';
 import { GiftedChat, Bubble, InputToolbar } from 'react-native-gifted-chat';
 import NetInfo from '@react-native-community/netinfo';
+import MapView from 'react-native-maps';
+
 
 // import { AsyncStorage } from 'react-native';
 // import AsyncStorage from '@react-native-community/async-storage';
@@ -10,8 +12,11 @@ import { v4 as uuidv4 } from 'uuid';
 //SETUP FIREBASE
 import firebase from 'firebase';
 import firestore from 'firebase';
+import { initializeApp } from "firebase/app";
 
 import { Platform, KeyboardAvoidingView } from 'react-native';
+
+import CustomActions from './CustomActions';
 
 export default class Chat extends React.Component{
 
@@ -28,15 +33,18 @@ export default class Chat extends React.Component{
       },
     }
 
-    if (!firebase.apps.length) {
-      firebase.initializeApp({
-              apiKey: "AIzaSyAoli4iRkMiZyei75YRGeqSyHaDh-dm6Do",
+    const firebaseConfig= {
+        apiKey: "AIzaSyAoli4iRkMiZyei75YRGeqSyHaDh-dm6Do",
         authDomain: "chat2-6589a.firebaseapp.com",
         projectId: "chat2-6589a",
         storageBucket: "chat2-6589a.appspot.com",
         messagingSenderId: "110175516076",
-          });
-          } 
+        appId: "1:110175516076:web:e561b819c9767090787609"
+          };
+    
+          if(!firebase.apps.length){
+            firebase.initializeApp(firebaseConfig);
+          }
 
           this.referenceChatMessages = firebase.firestore().collection("messages");
 
@@ -91,7 +99,7 @@ export default class Chat extends React.Component{
                   .where("uid", '==', this.state.uid);
         this.unsubscribe = this.referenceChatMessages
           .orderBy("createdAt", "desc")
-          // .onSnapshot(this.onCollectionUpdate);
+          .onSnapshot(this.onCollectionUpdate);
     });
   }
 
@@ -103,7 +111,7 @@ export default class Chat extends React.Component{
       // this.unsubscribe();
     };
 
-      addMessages() { 
+      addMessage() { 
         // add a new message to the conversation
         const message = this.state.messages[0];
         this.referenceChatMessages.add({
@@ -119,6 +127,7 @@ export default class Chat extends React.Component{
         this.setState(previousState => ({
           messages: GiftedChat.append(previousState.messages, messages),
         }), () => {
+          this.addMessage();
           this.saveMessages();
         });
       };
@@ -142,23 +151,30 @@ export default class Chat extends React.Component{
         }
       }
 
-  onCollectionUpdate = (querySnapshot) => {
-    const messages = [];
-    // go through each document
-    querySnapshot.forEach((doc) => {
-      // get the QueryDocumentSnapshot's data
-      let data = doc.data();
-      messages.push({
-        _id: data._id,
-        text: data.text,
-        createdAt: data.createdAt.toDate(),
-        user: data.user,
-      });
-      });
-      this.setState({
-        messages: messages,
-    });
-  };
+      onCollectionUpdate = (querySnapshot) => {
+        const messages = [];
+        // goes through each document
+        querySnapshot.forEach((doc) => {
+            // gets the QueryDocumentSnapshot's data
+            let data = doc.data();
+            messages.push({
+                _id: data._id,
+                createdAt: data.createdAt.toDate(),
+                text: data.text,
+                user: {
+                    _id: data.user._id,
+                    name: data.user.name,
+                    avatar: data.user.avatar
+                },
+                image: data.image || null,
+                location: data.location || null
+            });
+        });
+        this.setState({
+            messages: messages
+        });
+
+    };
 
   // Customize the color of the sender bubble
   renderBubble(props) {
@@ -185,11 +201,36 @@ export default class Chat extends React.Component{
     }
   }
 
+  renderCustomActions(props){
+    return <CustomActions {...props}/>
+  }
+
+  //RENDER MAP VIEW
+  renderCustomView(props){
+    const { currentMessage } = props;
+    if (currentMessage.location) {
+      return (
+        <MapView
+          style={{ width: 150, height: 150 }}
+          region={{
+            latitude: currentMessage.location.latitude,
+            longitude: currentMessage.location.longitude,
+            latitudeDelta: 0.0922,
+            longitudeDelta: 0.0421,
+          }}
+        />
+      );
+    }
+    return null;
+  };
+
   render() {
     let { color, name } = this.props.route.params;
     return (
       <View style={[{ backgroundColor: color }, styles.container]}>
       <GiftedChat
+      renderActions={this.renderCustomActions}
+      renderCustomView={this.renderCustomView}
       renderBubble={this.renderBubble.bind(this)}
       messages={this.state.messages}
       onSend={(messages) => this.onSend(messages)}
